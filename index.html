@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html ng-app="helloWorld">
+<head>
+	<meta charset="utf-8">
+	<title>Teste Angular</title>
+	<script src="angular.js"></script>
+	<script >
+		//p/ injeção de novos módulos
+		angular.module("helloWorld", []);
+		//aqui vou localizar o módulo helloworld
+		angular.module("helloWorld").controller("helloWorldCtrl", 
+				//scope está entre a model e a view e está injetado
+			function($scope){
+			$scope.message = "Hello World";
+			$scope.teste = "Wanderlei Rocha";
+		});
+	</script>
+</head>
+<body>
+	<div ng-controller="helloWorldCtrl">
+		<!--Interpolação naõ preciso escrever $scope.message-->
+		{{message}}
+		<br/>
+		{{teste}}
+	</div>
+
+
+</body>
+</html>
+
+<!--
+
+Diretivas são extensões da linguagem HTMl que permitem a implementação de novos comportamentos, de forma declarativa
+
+ngApp - define as fronteiras da aplicação, o angular percorre o html procurando por essas diretivas
+-->
