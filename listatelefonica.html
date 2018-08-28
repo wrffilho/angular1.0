@@ -12,99 +12,14 @@ ngController - vincula um elemento da view ao Controller
 <head>
 	<title>Lista Telefonica</title>
 	<link rel="stylesheet" type="text/css" href="lib/bootstrap/css/bootstrap.css">
-	<style>
-		.jumbotron {
-			width: 500px;
-			margin-top: 10px;
-			margin-left: auto;
-			margin-right: auto;
-			border-radius:  10px 20px;
-			border: solid 3px;
-			border-color: #52A3F9;
-		}
-		.jumbotron h3 {
-			margin-bottom: 30px;
-			text-align: center;
-		}
-		.table {
-			margin-top: 20px;
-		}
-		.form-control {
-			margin-bottom: 5px;
-		}
-		.selecionado {
-			background-color: yellow;
-		}
-		.negrito {
-			font-weight: bold;
-		}
-
-		.btn{
-			margin-bottom: 5px;
-		}
-
-		.alert{
-			margin-top: 10px;
-		}
-	</style>
+	<link rel="stylesheet" type="text/css" href="css/app.css">
 	<meta charset="utf-8">
 	<script src="lib/angular/angular.js"></script>
 	<script src="lib/angular/angular-messages.js"></script>
-	<script>
-		//[]-- é conjunto de modulos que se pode importar, está trazendos todos componentes
-		angular.module("listaTelefonica",["ngMessages"]);
-		angular.module("listaTelefonica").controller("listaTelefonicaCtrl", function($scope){
-			$scope.app="Lista Telefônica";
-			$scope.contatos = [
-				{nome:"Wanderlei", telefone:"98408-8408", cor: "red"},
-				{nome:"Aline", telefone:"98413-8381", cor:"blue"},
-				{nome:"Zuleide", telefone:"99400-2911", cor:"green"}
-				];
-			$scope.operadoras = [
-				{nome: "Claro", codigo: 21, categoria: "Celular"},
-				{nome: "Tim", codigo: 41, categoria: "Celular"},
-				{nome: "Oi", codigo: 14, categoria: "Celular"},
-				{nome: "Vivo", codigo: 15, categoria: "Celular"},
-				{nome: "GVT", codigo: 15, categoria: "Fixo"},
-				{nome: "Embratel", codigo: 15, categoria: "Fixo"}
-
-			];
-
-			//
-
-			$scope.adicionarContato = function(contato){
-					
-			//evitar ler parametros dentro do controller
-			//*$scope.contatos.push({nome: $scope.nome, telefone: $scope.telefone});*/
-			//forma correta
-			//$scope.contatos.push(nome, telefone);
-			// forma mais correta
-			//$scope.contatos.push(contato);
-			//para não alterar 
-			//$scope.contatos.push(angular.copy(contato));
-			//pode ser feito assim
-			$scope.contatos.push(contato);
-			delete $scope.contato;
-			$scope.contatoForm.$setPristine();
-			};
-			
-			$scope.apagarContatos = function(contatos){
-				$scope.contatos = contatos.filter(function(contato){
-					if(!contato.selecionado){
-						return contato;
-					}
-				});
-			};
-
-			$scope.isContatoSelecionado = function(contatos){
-				return contatos.some(function(contato){
-					return (contato.selecionado);
-				});
-
-			};
-		});
-
-	</script>
+	<script src="js/app.js"></script>
+	<script src="js/controllers/listaTelefonicaCtrl.js"></script>
+	<script src="js/services/contatosAPIService.js"></script>
+	<script src="js/services/operadorasAPIService.js"></script>
 </head>
 
 <!--ngController - faz o vinculo entre a view e controller 
@@ -131,24 +46,31 @@ ngController - vincula um elemento da view ao Controller
 	
 	<div class="jumbotron">
 		<h3 ng-bind="app"></h3>
+		{{message}}
+		<input class="form-control" type="text" ng-model="criterioDeBusca" placeholder="O que você está buscando?"/>
+		<hr/>
 		<!--{{app}} é uma outra forma de exibir o conteudo-->
 		<table ng-show="contatos.length > 0" class="table table-striped">
 			<tr>
 				<th></th>
-				<th>Nome</th>
-				<th>Telefone</th>
+				<th><a href="" ng-click="ordenarPor('nome')">Nome</a></th>
+				<th><a href="" ng-click="ordenarPor('telefone')">Telefone</a></th>
 				<th>Operadora</th>
-				<th>Status</th>
+				<th>Dt Add</th>
+				<!--<th>Status</th>-->
+
 			</tr>
-			<tr ng-class="{selecionado: contato.selecionado, negrito: contato.selecionado}" ng-repeat="contato in contatos">
+			<tr ng-class="{selecionado: contato.selecionado, negrito: contato.selecionado}" ng-repeat="contato in contatos | filter:criterioDeBusca | orderBy:criterioDeOrdenacao:direcaoDaOrdenacao">
 				<!--pode ser feito assim
 					<tr ng-class="{'selecionado negrito':contato.selecionado}" ng-repeat="contato in contatos">-->
 				<td><input  type="checkbox" ng-model="contato.selecionado"></td>
 				<td>{{contato.nome | uppercase}}</td>
 				<td>{{contato.telefone}}</td>
-				<td>{{contato.operadora.nome | lowercase}}</td>
+				<td>{{$scope.operadora.nome | lowercase}}</td>
+				<td>{{contato.data | date: 'dd/MM/yyyy'}}</td>
+
 				<!--<td>{{contato.operadora.nome | lowercase}}</td>-->
-				<td><div style="width: 20px; height: 20px;" ng-style="{'background-color': contato.cor}"></div></td>
+				<!--<td><div style="width: 20px; height: 20px;" ng-style="{'background-color': contato.cor}"></div></td>-->
 				
 
 
@@ -162,20 +84,20 @@ ngController - vincula um elemento da view ao Controller
 		<form name="contatoForm">
 			<input class="form-control" type="text" ng-model="contato.nome" placeholder="Nome" ng-required="true" name="nome"  ng-minlength="10"/>
 			<input class= "form-control" type="text" ng-model="contato.telefone" placeholder="Telefone" ng-required="true" name="telefone"/>
-			<select class= "form-control" ng-model="contato.operadora" ng-options="operadora.nome group by operadora.categoria for operadora in operadoras" name="sOperadora" ng-required = "true">
+			<select class= "form-control" ng-model="contato.operadora" ng-options="operadora.nome group by operadora.categoria for operadora in operadoras | orderBy: 'nome'" name="sOperadora" ng-required = "true">
 				<option value="">Selecione uma operadora</option>
 			</select>
 		</form>
 
-		<div ng-messages="contatoForm.nome.$error" class="alert alert-danger">
-			<div ng-message="required">
+		<div ng-show="contatoForm.nome.$dirty" ng-messages="contatoForm.nome.$error">
+			<div ng-message="required" class="alert alert-danger">
 				Por favor, preencha o campo nome!
 			</div>
-			<div ng-message="minlength">
+			<div ng-message="minlength" class="alert alert-danger">
 				O campo nome deve ter no mínimo 10 caracteres.
 			</div>
 		</div>
-		<div ng-show="contatoForm.telefone.$error.required && contatoForm.telefone.$dirty" class="alert alert-danger">
+		<div ng-show="contatoForm.telefone.$dirty" class="alert alert-danger">
 			Por favor, preencha o campo telefone!
 		</div>
 		<div ng-show="contatoForm.telefone.$error.pattern" class="alert alert-danger">
@@ -190,7 +112,7 @@ ngController - vincula um elemento da view ao Controller
 		-->
 		<div ng-show="contatoForm.sOperadora.$invalid && contatoForm.sOperadora.$dirty" class="alert alert-danger">Por favor, selecione uma operadora!</div>
 	</div>
-	<div ng-include="'footer.html'">teste</div>
+	<div ng-include="'view/footer.html'">teste</div>
 
 </body>
 </html>
